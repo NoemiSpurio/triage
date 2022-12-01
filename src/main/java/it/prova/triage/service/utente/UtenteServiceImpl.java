@@ -57,7 +57,6 @@ public class UtenteServiceImpl implements UtenteService {
 	@Transactional
 	public void rimuovi(Long idToRemove) {
 		repository.deleteById(idToRemove);
-		;
 	}
 
 	public List<Utente> findByExample(Utente example) {
