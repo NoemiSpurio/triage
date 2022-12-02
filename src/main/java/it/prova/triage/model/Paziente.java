@@ -52,6 +52,14 @@ public class Paziente {
 		this.codiceDottore = codiceDottore;
 	}
 
+	public Paziente(String nome, String cognome, String codiceFiscale, String codiceDottore) {
+		super();
+		this.nome = nome;
+		this.cognome = cognome;
+		this.codiceFiscale = codiceFiscale;
+		this.codiceDottore = codiceDottore;
+	}
+
 	public Long getId() {
 		return id;
 	}

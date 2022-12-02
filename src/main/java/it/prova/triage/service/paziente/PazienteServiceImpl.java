@@ -85,6 +85,7 @@ public class PazienteServiceImpl implements PazienteService {
 		}
 
 		pazienteInstance.setCodiceDottore(codiceDottore);
+		pazienteInstance.setStato(StatoPaziente.IN_VISITA);
 		pazienteRepository.save(pazienteInstance);
 	}
 

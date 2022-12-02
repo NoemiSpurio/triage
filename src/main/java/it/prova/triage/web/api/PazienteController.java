@@ -76,25 +76,22 @@ public class PazienteController {
 
 	@PostMapping("/assegnaPaziente/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void assegnaPaziente(@RequestBody String codiceDottore, @PathVariable(required = true) Long id) {
+	public void assegnaPaziente(@RequestBody DottoreRequestDTO dottoreRequest, @PathVariable(required = true) Long id) {
 
 		Paziente paziente = pazienteService.caricaSingoloPaziente(id);
 		if (paziente == null) {
 			throw new PazienteNotFoundException("Paziente not found con id: " + id);
 		}
 
-		DottoreRequestDTO dottoreRequest = new DottoreRequestDTO(paziente.getCodiceDottore(),
-				paziente.getCodiceFiscale());
-
 		LOGGER.info("....invocazione servizio esterno....");
-		ResponseEntity<DottoreRequestDTO> result = webClient.post().uri("/verifica/" + codiceDottore)
-				.body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve().toEntity(DottoreRequestDTO.class)
-				.block();
+		DottoreRequestDTO result = webClient.get().uri("/verifica/" + dottoreRequest.getCodiceDottore()).retrieve()
+				.bodyToMono(DottoreRequestDTO.class).block();
 
 		if (result == null) {
 			throw new RuntimeException();
 		}
 
+		dottoreRequest.setCodiceFiscalePaziente(paziente.getCodiceFiscale());
 		ResponseEntity<DottoreRequestDTO> response = webClient.post().uri("/impostaInVisita")
 				.body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve().toEntity(DottoreRequestDTO.class)
 				.block();
@@ -105,7 +102,7 @@ public class PazienteController {
 
 		LOGGER.info("....invocazione servizio esterno terminata....");
 
-		pazienteService.assegnaDottore(id, codiceDottore);
+		pazienteService.assegnaDottore(id, dottoreRequest.getCodiceDottore());
 	}
 
 	@GetMapping("/ricovera/{id}")
