@@ -115,5 +115,29 @@ public class PazienteController {
 		
 		pazienteService.ricovera(paziente);
 	}
+	
+	@GetMapping("/dimetti/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void dimetti(@PathVariable(required = true) Long id) {
+
+		Paziente paziente = pazienteService.caricaSingoloPaziente(id);
+		if (paziente == null) {
+			throw new PazienteNotFoundException("Paziente not found con id: " + id);
+		}
+
+		if (paziente.getCodiceDottore() == null) {
+			throw new PazienteSenzaDottoreException("Impossibile procedere perche' il paziente non ha un dottore");
+		}
+
+		DottoreRequestDTO dottoreRequest = new DottoreRequestDTO(paziente.getCodiceDottore(),
+				paziente.getCodiceFiscale());
+
+		LOGGER.info("....invocazione servizio esterno....");
+		webClient.post().uri("/terminaVisita").body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve()
+				.toEntity(DottoreRequestDTO.class).block();
+		LOGGER.info("....invocazione servizio esterno terminata....");
+		
+		pazienteService.dimetti(paziente);
+	}
 
 }
