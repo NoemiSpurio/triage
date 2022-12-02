@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -86,9 +87,22 @@ public class PazienteController {
 				paziente.getCodiceFiscale());
 
 		LOGGER.info("....invocazione servizio esterno....");
-		webClient.post().uri("/impostaInVisita/" + codiceDottore)
+		ResponseEntity<DottoreRequestDTO> result = webClient.post().uri("/verifica/" + codiceDottore)
 				.body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve().toEntity(DottoreRequestDTO.class)
 				.block();
+
+		if (result == null) {
+			throw new RuntimeException();
+		}
+
+		ResponseEntity<DottoreRequestDTO> response = webClient.post().uri("/impostaInVisita")
+				.body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve().toEntity(DottoreRequestDTO.class)
+				.block();
+
+		if (response == null) {
+			throw new RuntimeException();
+		}
+
 		LOGGER.info("....invocazione servizio esterno terminata....");
 
 		pazienteService.assegnaDottore(id, codiceDottore);
