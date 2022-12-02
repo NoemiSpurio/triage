@@ -15,4 +15,6 @@ public interface PazienteService {
 	public void inserisciNuovo(Paziente pazienteInstance);
 	
 	public void rimuovi(Long idToRemove);
+	
+	public void assegnaDottore(Long idPaziente, String codiceDottore);
 }

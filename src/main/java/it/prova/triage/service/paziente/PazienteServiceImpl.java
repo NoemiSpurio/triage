@@ -76,4 +76,16 @@ public class PazienteServiceImpl implements PazienteService {
 		pazienteRepository.deleteById(idToRemove);
 	}
 
+	@Override
+	public void assegnaDottore(Long idPaziente, String codiceDottore) {
+		Paziente pazienteInstance = pazienteRepository.findById(idPaziente).orElse(null);
+
+		if (pazienteInstance == null) {
+			throw new PazienteNotFoundException("Impossibile modificare, nessun paziente trovato con questo id");
+		}
+
+		pazienteInstance.setCodiceDottore(codiceDottore);
+		pazienteRepository.save(pazienteInstance);
+	}
+
 }
