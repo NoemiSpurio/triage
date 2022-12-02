@@ -87,7 +87,7 @@ public class PazienteController {
 		LOGGER.info("....invocazione servizio esterno....");
 		DottoreRequestDTO result = webClient.get().uri("/verifica/" + dottoreRequest.getCodiceDottore()).retrieve()
 				.onStatus(HttpStatus::is4xxClientError, response -> {
-					throw new AssociaPazienteDottoreException("");
+					throw new AssociaPazienteDottoreException("Impossibile procedere: il dottore richiesto non e' libero.");
 				}).bodyToMono(DottoreRequestDTO.class).block();
 
 		if (result == null) {
@@ -98,7 +98,7 @@ public class PazienteController {
 		ResponseEntity<DottoreRequestDTO> response = webClient.post().uri("/impostaInVisita")
 				.body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve()
 				.onStatus(HttpStatus::is4xxClientError, response2 -> {
-					throw new AssociaPazienteDottoreException("");
+					throw new AssociaPazienteDottoreException("Impossibile procedere: il dottore richiesto non e' libero.");
 				}).toEntity(DottoreRequestDTO.class).block();
 
 		if (response == null) {
@@ -129,7 +129,7 @@ public class PazienteController {
 		LOGGER.info("....invocazione servizio esterno....");
 		webClient.post().uri("/terminaVisita").body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve()
 				.onStatus(HttpStatus::is4xxClientError, response -> {
-					throw new AssociaPazienteDottoreException("");
+					throw new AssociaPazienteDottoreException("Impossibile procedere: il dottore richiesto non e' libero.");
 				}).toEntity(DottoreRequestDTO.class).block();
 		LOGGER.info("....invocazione servizio esterno terminata....");
 
