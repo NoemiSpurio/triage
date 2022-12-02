@@ -17,4 +17,8 @@ public interface PazienteService {
 	public void rimuovi(Long idToRemove);
 	
 	public void assegnaDottore(Long idPaziente, String codiceDottore);
+	
+	public void ricovera(Paziente input);
+	
+	public void dimetti(Paziente input);
 }

@@ -88,4 +88,18 @@ public class PazienteServiceImpl implements PazienteService {
 		pazienteRepository.save(pazienteInstance);
 	}
 
+	@Override
+	public void ricovera(Paziente input) {
+		input.setCodiceDottore(null);
+		input.setStato(StatoPaziente.RICOVERATO);
+		pazienteRepository.save(input);
+	}
+
+	@Override
+	public void dimetti(Paziente input) {
+		input.setCodiceDottore(null);
+		input.setStato(StatoPaziente.DIMESSO);
+		pazienteRepository.save(input);
+	}
+
 }

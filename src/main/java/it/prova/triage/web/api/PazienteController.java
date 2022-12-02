@@ -18,12 +18,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import it.prova.triage.dto.DottoreRequestDTO;
 import it.prova.triage.dto.DottoreResponseDTO;
 import it.prova.triage.dto.PazienteDTO;
 import it.prova.triage.model.Paziente;
 import it.prova.triage.service.paziente.PazienteService;
 import it.prova.triage.web.api.exception.IdNotNullForInsertException;
 import it.prova.triage.web.api.exception.PazienteNotFoundException;
+import it.prova.triage.web.api.exception.PazienteSenzaDottoreException;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -72,7 +74,7 @@ public class PazienteController {
 		pazienteService.aggiorna(pazienteInput.buildPazienteModel());
 	}
 
-	@PostMapping("assegnaPaziente/{id}")
+	@PostMapping("/assegnaPaziente/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void assegnaPaziente(@RequestBody String codiceDottore, @PathVariable(required = true) Long id) {
 
@@ -80,14 +82,38 @@ public class PazienteController {
 		if (paziente == null) {
 			throw new PazienteNotFoundException("Paziente not found con id: " + id);
 		}
-		
+
 		LOGGER.info("....invocazione servizio esterno....");
-		DottoreResponseDTO dottoreResponse = webClient.post().uri("/impostaInVisita/" + codiceDottore)
-				.body(Mono.just(paziente.getCodiceFiscale()), String.class).retrieve().bodyToMono(DottoreResponseDTO.class)
-				.block();
+		webClient.post().uri("/impostaInVisita/" + codiceDottore)
+				.body(Mono.just(paziente.getCodiceFiscale()), String.class).retrieve()
+				.bodyToMono(DottoreResponseDTO.class).block();
+		LOGGER.info("....invocazione servizio esterno terminata....");
+
+		pazienteService.assegnaDottore(id, codiceDottore);
+	}
+
+	@GetMapping("/ricovera/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void ricovera(@PathVariable(required = true) Long id) {
+
+		Paziente paziente = pazienteService.caricaSingoloPaziente(id);
+		if (paziente == null) {
+			throw new PazienteNotFoundException("Paziente not found con id: " + id);
+		}
+
+		if (paziente.getCodiceDottore() == null) {
+			throw new PazienteSenzaDottoreException("Impossibile procedere perche' il paziente non ha un dottore");
+		}
+
+		DottoreRequestDTO dottoreRequest = new DottoreRequestDTO(paziente.getCodiceDottore(),
+				paziente.getCodiceFiscale());
+
+		LOGGER.info("....invocazione servizio esterno....");
+		webClient.post().uri("/terminaVisita").body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve()
+				.toEntity(DottoreRequestDTO.class).block();
 		LOGGER.info("....invocazione servizio esterno terminata....");
 		
-		pazienteService.assegnaDottore(id, codiceDottore);
+		pazienteService.ricovera(paziente);
 	}
 
 }
