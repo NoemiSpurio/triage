@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import it.prova.triage.dto.DottoreRequestDTO;
-import it.prova.triage.dto.DottoreResponseDTO;
 import it.prova.triage.dto.PazienteDTO;
 import it.prova.triage.model.Paziente;
 import it.prova.triage.service.paziente.PazienteService;
@@ -83,10 +82,13 @@ public class PazienteController {
 			throw new PazienteNotFoundException("Paziente not found con id: " + id);
 		}
 
+		DottoreRequestDTO dottoreRequest = new DottoreRequestDTO(paziente.getCodiceDottore(),
+				paziente.getCodiceFiscale());
+
 		LOGGER.info("....invocazione servizio esterno....");
 		webClient.post().uri("/impostaInVisita/" + codiceDottore)
-				.body(Mono.just(paziente.getCodiceFiscale()), String.class).retrieve()
-				.bodyToMono(DottoreResponseDTO.class).block();
+				.body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve().toEntity(DottoreRequestDTO.class)
+				.block();
 		LOGGER.info("....invocazione servizio esterno terminata....");
 
 		pazienteService.assegnaDottore(id, codiceDottore);
@@ -112,10 +114,10 @@ public class PazienteController {
 		webClient.post().uri("/terminaVisita").body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve()
 				.toEntity(DottoreRequestDTO.class).block();
 		LOGGER.info("....invocazione servizio esterno terminata....");
-		
+
 		pazienteService.ricovera(paziente);
 	}
-	
+
 	@GetMapping("/dimetti/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void dimetti(@PathVariable(required = true) Long id) {
@@ -136,7 +138,7 @@ public class PazienteController {
 		webClient.post().uri("/terminaVisita").body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve()
 				.toEntity(DottoreRequestDTO.class).block();
 		LOGGER.info("....invocazione servizio esterno terminata....");
-		
+
 		pazienteService.dimetti(paziente);
 	}
 
