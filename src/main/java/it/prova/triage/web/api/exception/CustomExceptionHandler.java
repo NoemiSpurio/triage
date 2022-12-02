@@ -23,9 +23,10 @@ public class CustomExceptionHandler {
 
 		return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
 	}
-	
+
 	@ExceptionHandler(IdNotNullForInsertException.class)
-	public ResponseEntity<Object> handleIdNotNullForInsertException(IdNotNullForInsertException ex, WebRequest request) {
+	public ResponseEntity<Object> handleIdNotNullForInsertException(IdNotNullForInsertException ex,
+			WebRequest request) {
 
 		Map<String, Object> body = new LinkedHashMap<>();
 		body.put("timestamp", LocalDateTime.now());
@@ -34,9 +35,10 @@ public class CustomExceptionHandler {
 
 		return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
 	}
-	
+
 	@ExceptionHandler(PazienteNonDimessoException.class)
-	public ResponseEntity<Object> handlePazienteNonDimessoException(PazienteNonDimessoException ex, WebRequest request) {
+	public ResponseEntity<Object> handlePazienteNonDimessoException(PazienteNonDimessoException ex,
+			WebRequest request) {
 
 		Map<String, Object> body = new LinkedHashMap<>();
 		body.put("timestamp", LocalDateTime.now());
@@ -45,7 +47,7 @@ public class CustomExceptionHandler {
 
 		return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
 	}
-	
+
 	@ExceptionHandler(PazienteNotFoundException.class)
 	public ResponseEntity<Object> handlePazienteNotFoundException(PazienteNotFoundException ex, WebRequest request) {
 
@@ -56,9 +58,22 @@ public class CustomExceptionHandler {
 
 		return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
 	}
-	
+
 	@ExceptionHandler(PazienteSenzaDottoreException.class)
-	public ResponseEntity<Object> handlePazienteSenzaDottoreException(PazienteSenzaDottoreException ex, WebRequest request) {
+	public ResponseEntity<Object> handlePazienteSenzaDottoreException(PazienteSenzaDottoreException ex,
+			WebRequest request) {
+
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("timestamp", LocalDateTime.now());
+		body.put("message", ex.getMessage());
+		body.put("status", HttpStatus.BAD_REQUEST);
+
+		return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(AssociaPazienteDottoreException.class)
+	public ResponseEntity<Object> handleAssociaPazienteDottoreException(AssociaPazienteDottoreException ex,
+			WebRequest request) {
 
 		Map<String, Object> body = new LinkedHashMap<>();
 		body.put("timestamp", LocalDateTime.now());

@@ -23,6 +23,7 @@ import it.prova.triage.dto.DottoreRequestDTO;
 import it.prova.triage.dto.PazienteDTO;
 import it.prova.triage.model.Paziente;
 import it.prova.triage.service.paziente.PazienteService;
+import it.prova.triage.web.api.exception.AssociaPazienteDottoreException;
 import it.prova.triage.web.api.exception.IdNotNullForInsertException;
 import it.prova.triage.web.api.exception.PazienteNotFoundException;
 import it.prova.triage.web.api.exception.PazienteSenzaDottoreException;
@@ -85,7 +86,9 @@ public class PazienteController {
 
 		LOGGER.info("....invocazione servizio esterno....");
 		DottoreRequestDTO result = webClient.get().uri("/verifica/" + dottoreRequest.getCodiceDottore()).retrieve()
-				.bodyToMono(DottoreRequestDTO.class).block();
+				.onStatus(HttpStatus::is4xxClientError, response -> {
+					throw new AssociaPazienteDottoreException("");
+				}).bodyToMono(DottoreRequestDTO.class).block();
 
 		if (result == null) {
 			throw new RuntimeException();
@@ -93,8 +96,10 @@ public class PazienteController {
 
 		dottoreRequest.setCodiceFiscalePaziente(paziente.getCodiceFiscale());
 		ResponseEntity<DottoreRequestDTO> response = webClient.post().uri("/impostaInVisita")
-				.body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve().toEntity(DottoreRequestDTO.class)
-				.block();
+				.body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve()
+				.onStatus(HttpStatus::is4xxClientError, response2 -> {
+					throw new AssociaPazienteDottoreException("");
+				}).toEntity(DottoreRequestDTO.class).block();
 
 		if (response == null) {
 			throw new RuntimeException();
@@ -123,7 +128,9 @@ public class PazienteController {
 
 		LOGGER.info("....invocazione servizio esterno....");
 		webClient.post().uri("/terminaVisita").body(Mono.just(dottoreRequest), DottoreRequestDTO.class).retrieve()
-				.toEntity(DottoreRequestDTO.class).block();
+				.onStatus(HttpStatus::is4xxClientError, response -> {
+					throw new AssociaPazienteDottoreException("");
+				}).toEntity(DottoreRequestDTO.class).block();
 		LOGGER.info("....invocazione servizio esterno terminata....");
 
 		pazienteService.ricovera(paziente);
